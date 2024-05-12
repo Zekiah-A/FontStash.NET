@@ -402,6 +402,11 @@ namespace FontStash.NET
             GetState().Size = size;
         }
 
+        public void SetColour(byte r, byte g, byte b, byte a)
+        {
+            GetState().Colour = Utils.RgbaToUint(r, g, b, a);
+        }
+        
         public void SetColour(uint colour)
         {
             GetState().Colour = colour;

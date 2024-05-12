@@ -39,14 +39,10 @@ however, a context does not need to be passed with each call, as the context inf
 // The last parameter should usually be set to zero when using StbTrueType font indices.
 int testFontId = fontManager.CreateFont("testFont", "./fonts/verdana.ttf", 0);
 
-// Draw the font with the desired styles
-// Colours are stored as 4 sequential bytes (rgba) packed into a uint.
-uint fontColourRed = Utils.RgbaToUint(255, 0, 0, 255);
-
 // Render "I am the walrus!"
 fontManager.SetFont(testFontId);
 fontManager.SetSize(72.0f);
-fontManager.SetColour(fontColourRed);
+fontManager.SetColour(255, 0, 0, 255);
 // FontStash.DrawText(float, float string) returns the end X-Position of the rendered string on the window.
 float endX = fontManager.DrawText(20, 100, "I am the walrus!");
 
