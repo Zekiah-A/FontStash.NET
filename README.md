@@ -1,4 +1,4 @@
-# FontStash.NET Plus
+# FontStashPlus
 A modernised version of [FontStash.NET](https://github.com/MatijaBrown/FontStash.NET), that conforms to standard .NET code style
 practices, provides API cleanups, small optimisation and refactors.
 
