@@ -4,13 +4,11 @@ namespace FontStash.NET
 {
     public class FonsTtImpl
     {
-
-        public FontInfo font;
+        public FontInfo Font;
 
         public FonsTtImpl()
         {
-            font = new FontInfo();
+            Font = new FontInfo();
         }
-
     }
 }

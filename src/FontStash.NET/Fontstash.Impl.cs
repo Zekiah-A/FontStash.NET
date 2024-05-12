@@ -2,97 +2,103 @@
 
 namespace FontStash.NET
 {
-    public partial class Fontstash
+    public partial class FontManager
     {
-
-        private const int APREC = 16;
-        private const int ZPREC = 7;
+        private const int Aprec = 16;
+        private const int Zprec = 7;
 
         private void AddWhiteRect(int w, int h)
         {
             int gx = 0, gy = 0;
-            if (!_atlas.AddRect(w, h, ref gx, ref gy))
-                return;
-
-            int index = gx + (gy * _params.width);
-            for (int y = 0; y < h; y++)
+            if (!atlas.AddRect(w, h, ref gx, ref gy))
             {
-                for (int x = 0; x < w; x++)
-                {
-                    _texData[index + x] = 0xff;
-                }
-                index += _params.width;
+                return;
             }
 
-            _dirtyRect[0] = Math.Min(_dirtyRect[0], gx);
-            _dirtyRect[1] = Math.Min(_dirtyRect[1], gy);
-            _dirtyRect[2] = Math.Max(_dirtyRect[2], gx + w);
-            _dirtyRect[3] = Math.Max(_dirtyRect[3], gy + h);
+            var index = gx + gy * @params.Width;
+            for (var y = 0; y < h; y++)
+            {
+                for (var x = 0; x < w; x++) texData[index + x] = 0xff;
+                index += @params.Width;
+            }
+
+            dirtyRect[0] = Math.Min(dirtyRect[0], gx);
+            dirtyRect[1] = Math.Min(dirtyRect[1], gy);
+            dirtyRect[2] = Math.Max(dirtyRect[2], gx + w);
+            dirtyRect[3] = Math.Max(dirtyRect[3], gy + h);
         }
 
         private FonsState GetState()
         {
-            if (_states[_nstates - 1] == null)
-                _states[_nstates - 1] = new FonsState();
-            return _states[_nstates - 1];
+            if (states[nstates - 1] == null)
+            {
+                states[nstates - 1] = new FonsState();
+            }
+
+            return states[nstates - 1];
         }
 
         private int AllocFont()
         {
-            if (_nfonts + 1 > _cfonts)
+            if (nfonts + 1 > cfonts)
             {
-                _cfonts = _cfonts == 0 ? 8 : _cfonts * 2;
-                Array.Resize(ref _fonts, _cfonts);
+                cfonts = cfonts == 0 ? 8 : cfonts * 2;
+                Array.Resize(ref fonts, cfonts);
             }
-            FonsFont font = new();
-            font.glyphs = new FonsGlyph[INIT_GLYPHS];
-            font.cglyphs = INIT_GLYPHS;
-            font.nglyphs = 0;
 
-            _fonts[_nfonts++] = font;
-            return _nfonts - 1;
+            FonsFont font = new();
+            font.Glyphs = new FonsGlyph[InitGlyphs];
+            font.Cglyphs = InitGlyphs;
+            font.Nglyphs = 0;
+
+            fonts[nfonts++] = font;
+            return nfonts - 1;
         }
 
         private void BlurCols(int index, int w, int h, int dstStride, int alpha)
         {
-            for (int y = 0; y < h; y++)
+            for (var y = 0; y < h; y++)
             {
-                int z = 0;
-                for (int x = 1; x < w; x++)
+                var z = 0;
+                for (var x = 1; x < w; x++)
                 {
-                    z += (alpha * (((int)(_texData[index + x]) << ZPREC) - z)) >> APREC;
-                    _texData[index + x] = (byte)(z >> ZPREC);
+                    z += (alpha * ((texData[index + x] << Zprec) - z)) >> Aprec;
+                    texData[index + x] = (byte)(z >> Zprec);
                 }
-                _texData[index + (w - 1)] = 0;
+
+                texData[index + (w - 1)] = 0;
                 z = 0;
-                for (int x = w - 2; x >= 0; x--)
+                for (var x = w - 2; x >= 0; x--)
                 {
-                    z += (alpha * (((int)(_texData[index + x]) << ZPREC) - z)) >> APREC;
-                    _texData[index + x] = (byte)(z >> ZPREC);
+                    z += (alpha * ((texData[index + x] << Zprec) - z)) >> Aprec;
+                    texData[index + x] = (byte)(z >> Zprec);
                 }
-                _texData[index + 0] = 0;
+
+                texData[index + 0] = 0;
                 index += dstStride;
             }
         }
 
         private void BlurRows(int index, int w, int h, int dstStride, int alpha)
         {
-            for (int x = 0; x < w; x++)
+            for (var x = 0; x < w; x++)
             {
-                int z = 0;
-                for (int y = dstStride; y < h * dstStride; y += dstStride)
+                var z = 0;
+                for (var y = dstStride; y < h * dstStride; y += dstStride)
                 {
-                    z += (alpha * (((int)(_texData[index + y]) << ZPREC) - z)) >> APREC;
-                    _texData[index + y] = (byte)(z >> ZPREC);
+                    z += (alpha * ((texData[index + y] << Zprec) - z)) >> Aprec;
+                    texData[index + y] = (byte)(z >> Zprec);
                 }
-                _texData[index + ((h - 1) * dstStride)] = 0;
+
+                texData[index + (h - 1) * dstStride] = 0;
                 z = 0;
-                for (int y = (h - 2) * dstStride; y >= 0; y -= dstStride)
+                for (var y = (h - 2) * dstStride; y >= 0; y -= dstStride)
                 {
-                    z += (alpha * (((int)(_texData[index + y]) << ZPREC) - z)) >> APREC;
-                    _texData[index + y] = (byte)(z >> ZPREC);
+                    z += (alpha * ((texData[index + y] << Zprec) - z)) >> Aprec;
+                    texData[index + y] = (byte)(z >> Zprec);
                 }
-                _texData[index + 0] = 0;
+
+                texData[index + 0] = 0;
                 index++;
             }
         }
@@ -100,54 +106,66 @@ namespace FontStash.NET
         private void Blur(int index, int w, int h, int dstStride, int blur)
         {
             if (blur < 1)
+            {
                 return;
+            }
 
-            float sigma = (float)blur * 0.57735f; // 0.57735 =~= 1 / Sqrt(3)
-            int alpha = (int)((1 << APREC) * (1.0f - MathF.Exp(-2.3f / (sigma + 1.0f))));
+            var sigma = blur * 0.57735f; // 0.57735 =~= 1 / Sqrt(3)
+            var alpha = (int)((1 << Aprec) * (1.0f - MathF.Exp(-2.3f / (sigma + 1.0f))));
             BlurRows(index, w, h, dstStride, alpha);
             BlurCols(index, w, h, dstStride, alpha);
             BlurRows(index, w, h, dstStride, alpha);
             BlurCols(index, w, h, dstStride, alpha);
         }
 
-        private FonsGlyph GetGlyph(FonsFont font, uint codepoint, short isize, short iblur, FonsGlyphBitmap bitmapOption)
+        private FonsGlyph GetGlyph(FonsFont font, uint codepoint, short isize, short iblur,
+            FonsGlyphBitmap bitmapOption)
         {
             int gx = 0, gy = 0;
             FonsGlyph glyph = null;
-            float size = isize / 10.0f;
-            FonsFont renderFont = font;
+            var size = isize / 10.0f;
+            var renderFont = font;
 
             if (isize < 2)
+            {
                 return null;
+            }
+
             if (iblur > 20)
+            {
                 iblur = 20;
-            int pad = iblur + 2;
+            }
 
-            _nscratch = 0;
+            var pad = iblur + 2;
 
-            uint h = Utils.HashInt(codepoint) & (HASH_LUT_SIZE - 1);
-            int i = font.lut[h];
+            nscratch = 0;
+
+            var h = Utils.HashInt(codepoint) & (HashLutSize - 1);
+            var i = font.Lut[h];
             while (i != -1)
             {
-                if (font.glyphs[i].codepoint == codepoint && font.glyphs[i].size == isize && font.glyphs[i].blur == iblur)
+                if (font.Glyphs[i].Codepoint == codepoint && font.Glyphs[i].Size == isize &&
+                    font.Glyphs[i].Blur == iblur)
                 {
-                    glyph = font.glyphs[i];
-                    if (bitmapOption == FonsGlyphBitmap.Optional || (glyph.x0 >= 0 && glyph.y0 >= 0))
+                    glyph = font.Glyphs[i];
+                    if (bitmapOption == FonsGlyphBitmap.Optional || (glyph.X0 >= 0 && glyph.Y0 >= 0))
                     {
                         return glyph;
                     }
+
                     break;
                 }
-                i = font.glyphs[i].next;
+
+                i = font.Glyphs[i].Next;
             }
 
-            int g = FonsTt.GetGlyphIndex(font.font, (int)codepoint);
+            var g = FonsTt.GetGlyphIndex(font.Font, (int)codepoint);
             if (g == 0)
             {
-                for (i = 0; i < font.nfallbacks; i++)
+                for (i = 0; i < font.Nfallbacks; i++)
                 {
-                    FonsFont fallbackFont = _fonts[font.fallbacks[i]];
-                    int fallbackIndex = FonsTt.GetGlyphIndex(fallbackFont.font, (int)codepoint);
+                    var fallbackFont = fonts[font.Fallbacks[i]];
+                    var fallbackIndex = FonsTt.GetGlyphIndex(fallbackFont.Font, (int)codepoint);
                     if (fallbackIndex != 0)
                     {
                         g = fallbackIndex;
@@ -157,48 +175,53 @@ namespace FontStash.NET
                 }
             }
 
-            float scale = FonsTt.GetPixelHeightScale(renderFont.font, size);
-            FonsTt.BuildGlyphBitmap(renderFont.font, g, scale, out int advance, out int lsb, out int x0, out int y0, out int x1, out int y1);
-            int gw = x1 - x0 + pad * 2;
-            int gh = y1 - y0 + pad * 2;
+            var scale = FonsTt.GetPixelHeightScale(renderFont.Font, size);
+            FonsTt.BuildGlyphBitmap(renderFont.Font, g, scale, out var advance, out var lsb, out var x0, out var y0,
+                out var x1, out var y1);
+            var gw = x1 - x0 + pad * 2;
+            var gh = y1 - y0 + pad * 2;
 
-            if (bitmapOption == FonsGlyphBitmap.Requiered)
+            if (bitmapOption == FonsGlyphBitmap.Required)
             {
-                bool added = _atlas.AddRect(gw, gh, ref gx, ref gy);
+                var added = atlas.AddRect(gw, gh, ref gx, ref gy);
                 if (!added)
                 {
-                    _handleError?.Invoke(FonsErrorCode.AtlasFull, 0);
-                    added = _atlas.AddRect(gw, gh, ref gx, ref gy);
+                    handleError?.Invoke(FonsErrorCode.AtlasFull, 0);
+                    added = atlas.AddRect(gw, gh, ref gx, ref gy);
                 }
+
                 if (added == false)
+                {
                     return null;
+                }
             }
             else
             {
-                gx = INVALID;
-                gy = INVALID;
+                gx = Invalid;
+                gy = Invalid;
             }
 
             // Init glyph
             if (glyph == null)
             {
                 glyph = font.AllocGlyph();
-                glyph.codepoint = codepoint;
-                glyph.size = isize;
-                glyph.blur = iblur;
-                glyph.next = 0;
+                glyph.Codepoint = codepoint;
+                glyph.Size = isize;
+                glyph.Blur = iblur;
+                glyph.Next = 0;
 
-                glyph.next = font.lut[h];
-                font.lut[h] = font.nglyphs - 1;
+                glyph.Next = font.Lut[h];
+                font.Lut[h] = font.Nglyphs - 1;
             }
-            glyph.index = g;
-            glyph.x0 = (short)gx;
-            glyph.y0 = (short)gy;
-            glyph.x1 = (short)(glyph.x0 + gw);
-            glyph.y1 = (short)(glyph.y0 + gh);
-            glyph.xadv = (short)(scale * advance * 10.0f);
-            glyph.xoff = (short)(x0 - pad);
-            glyph.yoff = (short)(y0 - pad);
+
+            glyph.Index = g;
+            glyph.X0 = (short)gx;
+            glyph.Y0 = (short)gy;
+            glyph.X1 = (short)(glyph.X0 + gw);
+            glyph.Y1 = (short)(glyph.Y0 + gh);
+            glyph.Xadv = (short)(scale * advance * 10.0f);
+            glyph.Xoff = (short)(x0 - pad);
+            glyph.Yoff = (short)(y0 - pad);
 
             if (bitmapOption == FonsGlyphBitmap.Optional)
             {
@@ -206,161 +229,169 @@ namespace FontStash.NET
             }
 
             // rasterize
-            int index = (glyph.x0 + pad) + (glyph.y0 + pad) * _params.width;
-            FonsTt.RenderGlyphBitmap(renderFont.font, _texData, index, gw - (pad * 2), gh - (pad * 2), _params.width, scale, scale, g);
+            var index = glyph.X0 + pad + (glyph.Y0 + pad) * @params.Width;
+            FonsTt.RenderGlyphBitmap(renderFont.Font, texData, index, gw - pad * 2, gh - pad * 2, @params.Width, scale,
+                scale, g);
 
             // Ensure border pixel
-            index = glyph.x0 + (glyph.y0 * _params.width);
-            for (int y = 0; y < gh; y++)
+            index = glyph.X0 + glyph.Y0 * @params.Width;
+            for (var y = 0; y < gh; y++)
             {
-                _texData[index + (y * _params.width)] = 0;
-                _texData[index + (gw - 1 + y * _params.width)] = 0;
+                texData[index + y * @params.Width] = 0;
+                texData[index + (gw - 1) + y * @params.Width] = 0;
             }
-            for (int x = 0; x < gw; x++)
+
+            for (var x = 0; x < gw; x++)
             {
-                _texData[index + x] = 0;
-                _texData[index + ((gh - 1) * _params.width)] = 0;
+                texData[index + x] = 0;
+                texData[index + (gh - 1) * @params.Width] = 0;
             }
 
             if (iblur > 0)
             {
-                _nscratch = 0;
-                index = glyph.x0 + glyph.y0 * _params.width;
-                Blur(index, gw, gh, _params.width, iblur);
+                nscratch = 0;
+                index = glyph.X0 + glyph.Y0 * @params.Width;
+                Blur(index, gw, gh, @params.Width, iblur);
             }
 
-            _dirtyRect[0] = Math.Min(_dirtyRect[0], glyph.x0);
-            _dirtyRect[1] = Math.Min(_dirtyRect[1], glyph.y0);
-            _dirtyRect[2] = Math.Max(_dirtyRect[2], glyph.x1);
-            _dirtyRect[3] = Math.Max(_dirtyRect[3], glyph.y1);
+            dirtyRect[0] = Math.Min(dirtyRect[0], glyph.X0);
+            dirtyRect[1] = Math.Min(dirtyRect[1], glyph.Y0);
+            dirtyRect[2] = Math.Max(dirtyRect[2], glyph.X1);
+            dirtyRect[3] = Math.Max(dirtyRect[3], glyph.Y1);
 
             return glyph;
         }
 
-        private FonsQuad GetQuad(FonsFont font, int prevGlyphIndex, FonsGlyph glyph, float scale, float spacing, ref float x, ref float y)
+        private FonsQuad GetQuad(FonsFont font, int prevGlyphIndex, FonsGlyph glyph, float scale, float spacing,
+            ref float x, ref float y)
         {
             FonsQuad q = new();
 
-            if (prevGlyphIndex != INVALID)
+            if (prevGlyphIndex != Invalid)
             {
-                float adv = FonsTt.GetGlyphKernAdvance(font.font, prevGlyphIndex, glyph.index) * scale;
+                var adv = FonsTt.GetGlyphKernAdvance(font.Font, prevGlyphIndex, glyph.Index) * scale;
                 x += (int)(adv + spacing + 0.5f);
             }
 
-            float xoff = (short)(glyph.xoff + 1);
-            float yoff = (short)(glyph.yoff + 1);
-            float x0 = (short)(glyph.x0 + 1);
-            float y0 = (short)(glyph.y0 + 1);
-            float x1 = (short)(glyph.x1 - 1);
-            float y1 = (short)(glyph.y1 - 1);
+            float xoff = (short)(glyph.Xoff + 1);
+            float yoff = (short)(glyph.Yoff + 1);
+            float x0 = (short)(glyph.X0 + 1);
+            float y0 = (short)(glyph.Y0 + 1);
+            float x1 = (short)(glyph.X1 - 1);
+            float y1 = (short)(glyph.Y1 - 1);
 
             float rx, ry;
-            if ((_params.flags & (byte)FonsFlags.ZeroTopleft) != 0)
+            if ((@params.Flags & (byte)FontFlags.ZeroTopLeft) != 0)
             {
                 rx = MathF.Floor(x + xoff);
                 ry = MathF.Floor(y + yoff);
 
-                q.x0 = rx;
-                q.y0 = ry;
-                q.x1 = rx + x1 - x0;
-                q.y1 = ry + y1 - y0;
+                q.X0 = rx;
+                q.Y0 = ry;
+                q.X1 = rx + x1 - x0;
+                q.Y1 = ry + y1 - y0;
 
-                q.s0 = x0 * _itw;
-                q.t0 = y0 * _ith;
-                q.s1 = x1 * _itw;
-                q.t1 = y1 * _ith;
+                q.S0 = x0 * itw;
+                q.T0 = y0 * ith;
+                q.S1 = x1 * itw;
+                q.T1 = y1 * ith;
             }
             else
             {
                 rx = MathF.Floor(x + xoff);
                 ry = MathF.Floor(y - yoff);
 
-                q.x0 = rx;
-                q.y0 = ry;
-                q.x1 = rx + x1 - x0;
-                q.y1 = ry - y1 + y0;
+                q.X0 = rx;
+                q.Y0 = ry;
+                q.X1 = rx + x1 - x0;
+                q.Y1 = ry - y1 + y0;
 
-                q.s0 = x0 * _itw;
-                q.t0 = y0 * _ith;
-                q.s1 = x1 * _itw;
-                q.t1 = y1 * _ith;
+                q.S0 = x0 * itw;
+                q.T0 = y0 * ith;
+                q.S1 = x1 * itw;
+                q.T1 = y1 * ith;
             }
 
-            x += (int)(glyph.xadv / 10.0f + 0.5f);
+            x += (int)(glyph.Xadv / 10.0f + 0.5f);
             return q;
         }
 
         private void Flush()
         {
-            if (_dirtyRect[0] < _dirtyRect[2] && _dirtyRect[1] < _dirtyRect[3])
+            if (dirtyRect[0] < dirtyRect[2] && dirtyRect[1] < dirtyRect[3])
             {
-                _params.renderUpdate?.Invoke(_dirtyRect, _texData);
-                _dirtyRect[0] = _params.width;
-                _dirtyRect[1] = _params.height;
-                _dirtyRect[2] = 0;
-                _dirtyRect[3] = 0;
+                @params.RenderUpdate?.Invoke(dirtyRect, texData);
+                dirtyRect[0] = @params.Width;
+                dirtyRect[1] = @params.Height;
+                dirtyRect[2] = 0;
+                dirtyRect[3] = 0;
             }
 
-            if (_nverts > 0)
+            if (nverts > 0)
             {
-                _params.renderDraw?.Invoke(_verts, _tcoords, _colours, _nverts);
-                _nverts = 0;
+                @params.RenderDraw?.Invoke(verts, tcoords, colours, nverts);
+                nverts = 0;
             }
         }
 
         private void Vertex(float x, float y, float s, float t, uint c)
         {
-            _verts[_nverts * 2 + 0] = x;
-            _verts[_nverts * 2 + 1] = y;
-            _tcoords[_nverts * 2 + 0] = s;
-            _tcoords[_nverts * 2 + 1] = t;
-            _colours[_nverts] = c;
-            _nverts++;
+            verts[nverts * 2 + 0] = x;
+            verts[nverts * 2 + 1] = y;
+            tcoords[nverts * 2 + 0] = s;
+            tcoords[nverts * 2 + 1] = t;
+            colours[nverts] = c;
+            nverts++;
         }
 
         private float GetVertAlign(FonsFont font, int align, short isize)
         {
-            if ((_params.flags & (uint)FonsFlags.ZeroTopleft) != 0)
+            if ((@params.Flags & (uint)FontFlags.ZeroTopLeft) != 0)
             {
                 if ((align & (uint)FonsAlign.Top) != 0)
                 {
-                    return font.ascender * (float)isize / 10.0f;
+                    return font.Ascender * isize / 10.0f;
                 }
-                else if ((align & (uint)FonsAlign.Middle) != 0)
+
+                if ((align & (uint)FonsAlign.Middle) != 0)
                 {
-                    return (font.ascender + font.descender) / 2.0f * (float)isize / 10.0f;
+                    return (font.Ascender + font.Descender) / 2.0f * isize / 10.0f;
                 }
-                else if ((align & (uint)FonsAlign.Baseline) != 0)
+
+                if ((align & (uint)FonsAlign.Baseline) != 0)
                 {
                     return 0.0f;
                 }
-                else if ((align & (uint)FonsAlign.Bottom) != 0)
+
+                if ((align & (uint)FonsAlign.Bottom) != 0)
                 {
-                    return font.descender * (float)isize / 10.0f;
+                    return font.Descender * isize / 10.0f;
                 }
             }
             else
             {
                 if ((align & (uint)FonsAlign.Top) != 0)
                 {
-                    return -font.ascender * (float)isize / 10.0f;
+                    return -font.Ascender * isize / 10.0f;
                 }
-                else if ((align & (uint)FonsAlign.Middle) != 0)
+
+                if ((align & (uint)FonsAlign.Middle) != 0)
                 {
-                    return -(font.ascender + font.descender) / 2.0f * (float)isize / 10.0f;
+                    return -(font.Ascender + font.Descender) / 2.0f * isize / 10.0f;
                 }
-                else if ((align & (uint)FonsAlign.Baseline) != 0)
+
+                if ((align & (uint)FonsAlign.Baseline) != 0)
                 {
                     return 0.0f;
                 }
-                else if ((align & (uint)FonsAlign.Bottom) != 0)
+
+                if ((align & (uint)FonsAlign.Bottom) != 0)
                 {
-                    return -font.descender * (float)isize / 10.0f;
+                    return -font.Descender * isize / 10.0f;
                 }
             }
 
             return 0.0f;
         }
-
     }
 }

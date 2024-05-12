@@ -2,9 +2,7 @@
 {
     internal struct FonsAtlasNode
     {
-
-        public short x, y;
-        public short width;
-
+        public short X, Y;
+        public short Width;
     }
 }

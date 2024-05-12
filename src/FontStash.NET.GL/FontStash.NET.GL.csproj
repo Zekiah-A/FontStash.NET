@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFramework>net5.0</TargetFramework>
+		<TargetFramework>net8.0</TargetFramework>
 		<Authors>Matija Brown</Authors>
 		<RepositoryUrl>https://github.com/MatijaBrown/FontStash.NET</RepositoryUrl>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>

@@ -1,8 +1,10 @@
-﻿namespace FontStash.NET
+﻿using System;
+
+namespace FontStash.NET
 {
+    [Flags]
     public enum FonsAlign
     {
-
         Left = 1 << 0,
         Center = 1 << 1,
         Right = 1 << 2,
@@ -11,6 +13,5 @@
         Middle = 1 << 4,
         Bottom = 1 << 5,
         Baseline = 1 << 6
-
     }
 }

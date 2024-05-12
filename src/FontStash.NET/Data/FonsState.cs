@@ -2,18 +2,17 @@
 {
     internal class FonsState
     {
+        public int Align;
+        public float Blur;
+        public uint Colour;
 
-        public int font;
-        public int align;
-        public float size;
-        public uint colour;
-        public float blur;
-        public float spacing;
+        public int Font;
+        public float Size;
+        public float Spacing;
 
         public FonsState Copy()
         {
             return (FonsState)MemberwiseClone();
         }
-
     }
 }
